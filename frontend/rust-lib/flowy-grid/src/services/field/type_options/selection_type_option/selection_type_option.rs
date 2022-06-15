@@ -503,7 +503,7 @@ fn make_select_context_from(cell_rev: &Option<CellRevision>, options: &[SelectOp
 #[cfg(test)]
 mod tests {
     use crate::services::field::FieldBuilder;
-    use crate::services::field::{
+    use super::{
         MultiSelectTypeOption, MultiSelectTypeOptionBuilder, SelectOption, SelectOptionCellContentChangeset,
         SelectOptionCellData, SingleSelectTypeOption, SingleSelectTypeOptionBuilder, SELECTION_IDS_SEPARATOR,
     };
