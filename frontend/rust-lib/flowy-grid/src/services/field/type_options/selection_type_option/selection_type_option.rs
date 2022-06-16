@@ -1,17 +1,15 @@
-use crate::entities::{CellIdentifier, CellIdentifierPayload};
-use crate::impl_type_option;
-use crate::services::field::type_options::util::get_cell_data;
-use crate::services::field::{BoxTypeOptionBuilder, TypeOptionBuilder};
-use crate::services::row::{CellContentChangeset, CellDataOperation, DecodedCellData, TypeOptionCellData};
-use bytes::Bytes;
-use flowy_derive::{ProtoBuf, ProtoBuf_Enum};
-use flowy_error::{ErrorCode, FlowyError, FlowyResult};
-use flowy_grid_data_model::entities::{CellChangeset, FieldType};
-use flowy_grid_data_model::parser::NotEmptyStr;
-use flowy_grid_data_model::revision::{CellRevision, FieldRevision, TypeOptionDataDeserializer, TypeOptionDataEntry};
 use nanoid::nanoid;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
+
+use super::*;
+use crate::entities::{CellIdentifier, CellIdentifierPayload};
+use crate::services::row::{TypeOptionCellData};
+use flowy_derive::{ProtoBuf, ProtoBuf_Enum};
+use flowy_error::{ErrorCode, FlowyResult};
+use flowy_grid_data_model::entities::{CellChangeset, FieldType};
+use flowy_grid_data_model::parser::NotEmptyStr;
+use flowy_grid_data_model::revision::{CellRevision, FieldRevision, TypeOptionDataEntry};
 
 pub const SELECTION_IDS_SEPARATOR: &str = ",";
 
@@ -65,219 +63,8 @@ pub fn select_option_operation(field_rev: &FieldRevision) -> FlowyResult<Box<dyn
     }
 }
 
-// Single select
-#[derive(Clone, Debug, Default, Serialize, Deserialize, ProtoBuf)]
-pub struct SingleSelectTypeOption {
-    #[pb(index = 1)]
-    pub options: Vec<SelectOption>,
 
-    #[pb(index = 2)]
-    pub disable_color: bool,
-}
-impl_type_option!(SingleSelectTypeOption, FieldType::SingleSelect);
-
-impl SelectOptionOperation for SingleSelectTypeOption {
-    fn select_option_cell_data(&self, cell_rev: &Option<CellRevision>) -> SelectOptionCellData {
-        let select_options = make_select_context_from(cell_rev, &self.options);
-        SelectOptionCellData {
-            options: self.options.clone(),
-            select_options,
-        }
-    }
-
-    fn options(&self) -> &Vec<SelectOption> {
-        &self.options
-    }
-
-    fn mut_options(&mut self) -> &mut Vec<SelectOption> {
-        &mut self.options
-    }
-}
-
-impl CellDataOperation<String> for SingleSelectTypeOption {
-    fn decode_cell_data<T>(
-        &self,
-        encoded_data: T,
-        decoded_field_type: &FieldType,
-        _field_rev: &FieldRevision,
-    ) -> FlowyResult<DecodedCellData>
-    where
-        T: Into<String>,
-    {
-        if !decoded_field_type.is_select_option() {
-            return Ok(DecodedCellData::default());
-        }
-
-        let encoded_data = encoded_data.into();
-        let mut cell_data = SelectOptionCellData {
-            options: self.options.clone(),
-            select_options: vec![],
-        };
-        if let Some(option_id) = select_option_ids(encoded_data).first() {
-            if let Some(option) = self.options.iter().find(|option| &option.id == option_id) {
-                cell_data.select_options.push(option.clone());
-            }
-        }
-
-        DecodedCellData::try_from_bytes(cell_data)
-    }
-
-    fn apply_changeset<C>(&self, changeset: C, _cell_rev: Option<CellRevision>) -> Result<String, FlowyError>
-    where
-        C: Into<CellContentChangeset>,
-    {
-        let changeset = changeset.into();
-        let select_option_changeset: SelectOptionCellContentChangeset = serde_json::from_str(&changeset)?;
-        let new_cell_data: String;
-        if let Some(insert_option_id) = select_option_changeset.insert_option_id {
-            tracing::trace!("Insert single select option: {}", &insert_option_id);
-            new_cell_data = insert_option_id;
-        } else {
-            tracing::trace!("Delete single select option");
-            new_cell_data = "".to_string()
-        }
-
-        Ok(new_cell_data)
-    }
-}
-
-#[derive(Default)]
-pub struct SingleSelectTypeOptionBuilder(SingleSelectTypeOption);
-impl_into_box_type_option_builder!(SingleSelectTypeOptionBuilder);
-impl_builder_from_json_str_and_from_bytes!(SingleSelectTypeOptionBuilder, SingleSelectTypeOption);
-
-impl SingleSelectTypeOptionBuilder {
-    pub fn option(mut self, opt: SelectOption) -> Self {
-        self.0.options.push(opt);
-        self
-    }
-}
-
-impl TypeOptionBuilder for SingleSelectTypeOptionBuilder {
-    fn field_type(&self) -> FieldType {
-        self.0.field_type()
-    }
-
-    fn entry(&self) -> &dyn TypeOptionDataEntry {
-        &self.0
-    }
-}
-
-// Multiple select
-#[derive(Clone, Debug, Default, Serialize, Deserialize, ProtoBuf)]
-pub struct MultiSelectTypeOption {
-    #[pb(index = 1)]
-    pub options: Vec<SelectOption>,
-
-    #[pb(index = 2)]
-    pub disable_color: bool,
-}
-impl_type_option!(MultiSelectTypeOption, FieldType::MultiSelect);
-
-impl SelectOptionOperation for MultiSelectTypeOption {
-    fn select_option_cell_data(&self, cell_rev: &Option<CellRevision>) -> SelectOptionCellData {
-        let select_options = make_select_context_from(cell_rev, &self.options);
-        SelectOptionCellData {
-            options: self.options.clone(),
-            select_options,
-        }
-    }
-
-    fn options(&self) -> &Vec<SelectOption> {
-        &self.options
-    }
-
-    fn mut_options(&mut self) -> &mut Vec<SelectOption> {
-        &mut self.options
-    }
-}
-
-impl CellDataOperation<String> for MultiSelectTypeOption {
-    fn decode_cell_data<T>(
-        &self,
-        encoded_data: T,
-        decoded_field_type: &FieldType,
-        _field_rev: &FieldRevision,
-    ) -> FlowyResult<DecodedCellData>
-    where
-        T: Into<String>,
-    {
-        if !decoded_field_type.is_select_option() {
-            return Ok(DecodedCellData::default());
-        }
-
-        let encoded_data = encoded_data.into();
-        let select_options = select_option_ids(encoded_data)
-            .into_iter()
-            .flat_map(|option_id| self.options.iter().find(|option| option.id == option_id).cloned())
-            .collect::<Vec<SelectOption>>();
-
-        let cell_data = SelectOptionCellData {
-            options: self.options.clone(),
-            select_options,
-        };
-
-        DecodedCellData::try_from_bytes(cell_data)
-    }
-
-    fn apply_changeset<T>(&self, changeset: T, cell_rev: Option<CellRevision>) -> Result<String, FlowyError>
-    where
-        T: Into<CellContentChangeset>,
-    {
-        let content_changeset: SelectOptionCellContentChangeset = serde_json::from_str(&changeset.into())?;
-        let new_cell_data: String;
-        match cell_rev {
-            None => {
-                new_cell_data = content_changeset.insert_option_id.unwrap_or_else(|| "".to_owned());
-            }
-            Some(cell_rev) => {
-                let cell_data = get_cell_data(&cell_rev);
-                let mut selected_options = select_option_ids(cell_data);
-                if let Some(insert_option_id) = content_changeset.insert_option_id {
-                    tracing::trace!("Insert multi select option: {}", &insert_option_id);
-                    if selected_options.contains(&insert_option_id) {
-                        selected_options.retain(|id| id != &insert_option_id);
-                    } else {
-                        selected_options.push(insert_option_id);
-                    }
-                }
-
-                if let Some(delete_option_id) = content_changeset.delete_option_id {
-                    tracing::trace!("Delete multi select option: {}", &delete_option_id);
-                    selected_options.retain(|id| id != &delete_option_id);
-                }
-
-                new_cell_data = selected_options.join(SELECTION_IDS_SEPARATOR);
-                tracing::trace!("Multi select cell data: {}", &new_cell_data);
-            }
-        }
-
-        Ok(new_cell_data)
-    }
-}
-
-#[derive(Default)]
-pub struct MultiSelectTypeOptionBuilder(MultiSelectTypeOption);
-impl_into_box_type_option_builder!(MultiSelectTypeOptionBuilder);
-impl_builder_from_json_str_and_from_bytes!(MultiSelectTypeOptionBuilder, MultiSelectTypeOption);
-impl MultiSelectTypeOptionBuilder {
-    pub fn option(mut self, opt: SelectOption) -> Self {
-        self.0.options.push(opt);
-        self
-    }
-}
-
-impl TypeOptionBuilder for MultiSelectTypeOptionBuilder {
-    fn field_type(&self) -> FieldType {
-        self.0.field_type()
-    }
-
-    fn entry(&self) -> &dyn TypeOptionDataEntry {
-        &self.0
-    }
-}
-
-fn select_option_ids(data: String) -> Vec<String> {
+pub fn select_option_ids(data: String) -> Vec<String> {
     data.split(SELECTION_IDS_SEPARATOR)
         .map(|id| id.to_string())
         .collect::<Vec<String>>()
@@ -484,7 +271,7 @@ impl std::default::Default for SelectOptionColor {
     }
 }
 
-fn make_select_context_from(cell_rev: &Option<CellRevision>, options: &[SelectOption]) -> Vec<SelectOption> {
+pub fn make_select_context_from(cell_rev: &Option<CellRevision>, options: &[SelectOption]) -> Vec<SelectOption> {
     match cell_rev {
         None => vec![],
         Some(cell_rev) => {
@@ -634,3 +421,4 @@ mod tests {
         );
     }
 }
+
