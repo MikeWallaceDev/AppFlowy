@@ -1,8 +1,10 @@
 mod single_selection_type_option;
 mod multiple_selection_type_option;
+mod checklist_selection_type_option;
 
 pub use single_selection_type_option::*;
 pub use multiple_selection_type_option::*;
+pub use checklist_selection_type_option::*;
 
 use nanoid::nanoid;
 use serde::{Deserialize, Serialize};

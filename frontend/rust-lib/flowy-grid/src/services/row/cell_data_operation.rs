@@ -132,6 +132,7 @@ pub fn apply_cell_data_changeset<T: Into<CellContentChangeset>>(
         FieldType::DateTime => DateTypeOption::from(field_rev).apply_changeset(changeset, cell_rev),
         FieldType::SingleSelect => SingleSelectTypeOption::from(field_rev).apply_changeset(changeset, cell_rev),
         FieldType::MultiSelect => MultiSelectTypeOption::from(field_rev).apply_changeset(changeset, cell_rev),
+        FieldType::ChecklistSelect => ChecklistSelectTypeOption::from(field_rev).apply_changeset(changeset, cell_rev),
         FieldType::Checkbox => CheckboxTypeOption::from(field_rev).apply_changeset(changeset, cell_rev),
         FieldType::URL => URLTypeOption::from(field_rev).apply_changeset(changeset, cell_rev),
     }?;
@@ -182,6 +183,9 @@ pub fn decode_cell_data<T: Into<String>>(
                 .decode_cell_data(encoded_data, s_field_type, field_rev),
             FieldType::MultiSelect => field_rev
                 .get_type_option_entry::<MultiSelectTypeOption>(t_field_type)?
+                .decode_cell_data(encoded_data, s_field_type, field_rev),
+            FieldType::ChecklistSelect => field_rev
+                .get_type_option_entry::<ChecklistSelectTypeOption>(t_field_type)?
                 .decode_cell_data(encoded_data, s_field_type, field_rev),
             FieldType::Checkbox => field_rev
                 .get_type_option_entry::<CheckboxTypeOption>(t_field_type)?

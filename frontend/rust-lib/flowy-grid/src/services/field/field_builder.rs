@@ -94,6 +94,7 @@ pub fn default_type_option_builder_from_type(field_type: &FieldType) -> Box<dyn 
         FieldType::DateTime => DateTypeOption::default().into(),
         FieldType::SingleSelect => SingleSelectTypeOption::default().into(),
         FieldType::MultiSelect => MultiSelectTypeOption::default().into(),
+        FieldType::ChecklistSelect => ChecklistSelectTypeOption::default().into(),
         FieldType::Checkbox => CheckboxTypeOption::default().into(),
         FieldType::URL => URLTypeOption::default().into(),
     };
@@ -108,6 +109,7 @@ pub fn type_option_builder_from_json_str(s: &str, field_type: &FieldType) -> Box
         FieldType::DateTime => Box::new(DateTypeOptionBuilder::from_json_str(s)),
         FieldType::SingleSelect => Box::new(SingleSelectTypeOptionBuilder::from_json_str(s)),
         FieldType::MultiSelect => Box::new(MultiSelectTypeOptionBuilder::from_json_str(s)),
+        FieldType::ChecklistSelect => Box::new(ChecklistSelectTypeOptionBuilder::from_json_str(s)),
         FieldType::Checkbox => Box::new(CheckboxTypeOptionBuilder::from_json_str(s)),
         FieldType::URL => Box::new(URLTypeOptionBuilder::from_json_str(s)),
     }
@@ -121,6 +123,7 @@ pub fn type_option_builder_from_bytes<T: Into<Bytes>>(bytes: T, field_type: &Fie
         FieldType::DateTime => Box::new(DateTypeOptionBuilder::from_protobuf_bytes(bytes)),
         FieldType::SingleSelect => Box::new(SingleSelectTypeOptionBuilder::from_protobuf_bytes(bytes)),
         FieldType::MultiSelect => Box::new(MultiSelectTypeOptionBuilder::from_protobuf_bytes(bytes)),
+        FieldType::ChecklistSelect => Box::new(ChecklistSelectTypeOptionBuilder::from_protobuf_bytes(bytes)),
         FieldType::Checkbox => Box::new(CheckboxTypeOptionBuilder::from_protobuf_bytes(bytes)),
         FieldType::URL => Box::new(URLTypeOptionBuilder::from_protobuf_bytes(bytes)),
     }

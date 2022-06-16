@@ -454,8 +454,9 @@ pub enum FieldType {
     DateTime = 2,
     SingleSelect = 3,
     MultiSelect = 4,
-    Checkbox = 5,
-    URL = 6,
+    ChecklistSelect = 5,
+    Checkbox = 6,
+    URL = 7,
 }
 
 impl std::default::Default for FieldType {
