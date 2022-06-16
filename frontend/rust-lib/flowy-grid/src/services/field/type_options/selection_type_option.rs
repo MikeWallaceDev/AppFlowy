@@ -1,8 +1,13 @@
+mod single_selection_type_option;
+mod multiple_selection_type_option;
+
+pub use single_selection_type_option::*;
+pub use multiple_selection_type_option::*;
+
 use nanoid::nanoid;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 
-use super::*;
 use crate::entities::{CellIdentifier, CellIdentifierPayload};
 use crate::services::row::{TypeOptionCellData};
 use flowy_derive::{ProtoBuf, ProtoBuf_Enum};
