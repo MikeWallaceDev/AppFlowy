@@ -514,11 +514,17 @@ impl FieldType {
         self == &FieldType::MultiSelect
     }
 
+    pub fn is_checklist_select(&self) -> bool {
+        self == &FieldType::ChecklistSelect
+    }
+
     pub fn is_url(&self) -> bool {
         self == &FieldType::URL
     }
 
     pub fn is_select_option(&self) -> bool {
-        self == &FieldType::MultiSelect || self == &FieldType::SingleSelect
+        self == &FieldType::SingleSelect ||
+        self == &FieldType::MultiSelect || 
+        self == &FieldType::ChecklistSelect
     }
 }

@@ -166,6 +166,7 @@
       "numberFieldName": "Numbers",
       "singleSelectFieldName": "Select",
       "multiSelectFieldName": "Multiselect",
+      "checklistSelectFieldName": "Checklist",
       "urlFieldName": "URL",
       "numberFormat": " Number format",
       "dateFormat": " Date format",

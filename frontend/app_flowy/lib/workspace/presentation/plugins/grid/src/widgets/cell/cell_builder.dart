@@ -9,6 +9,7 @@ import 'checkbox_cell.dart';
 import 'date_cell/date_cell.dart';
 import 'number_cell.dart';
 import 'select_option_cell/select_option_cell.dart';
+import 'select_option_cell/checklist_cell.dart';
 import 'text_cell.dart';
 import 'url_cell/url_cell.dart';
 
@@ -26,6 +27,8 @@ GridCellWidget buildGridCellWidget(GridCell gridCell, GridCellCache cellCache, {
       return SingleSelectCell(cellContextBuilder: cellContextBuilder, style: style, key: key);
     case FieldType.MultiSelect:
       return MultiSelectCell(cellContextBuilder: cellContextBuilder, style: style, key: key);
+    case FieldType.ChecklistSelect:
+      return ChecklistSelectCell(cellContextBuilder: cellContextBuilder, style: style, key: key);
     case FieldType.Number:
       return NumberCell(cellContextBuilder: cellContextBuilder, key: key);
     case FieldType.RichText:

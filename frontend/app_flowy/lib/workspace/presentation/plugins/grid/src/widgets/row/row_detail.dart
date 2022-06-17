@@ -204,6 +204,10 @@ GridCellStyle? _customCellStyle(AppTheme theme, FieldType fieldType) {
       return SelectOptionCellStyle(
         placeholder: LocaleKeys.grid_row_textPlaceholder.tr(),
       );
+    case FieldType.ChecklistSelect:
+      return SelectOptionCellStyle(
+        placeholder: LocaleKeys.grid_row_textPlaceholder.tr(),
+      );
     case FieldType.Number:
       return null;
     case FieldType.RichText:

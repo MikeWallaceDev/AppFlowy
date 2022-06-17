@@ -63,6 +63,10 @@ pub fn select_option_operation(field_rev: &FieldRevision) -> FlowyResult<Box<dyn
             let type_option = MultiSelectTypeOption::from(field_rev);
             Ok(Box::new(type_option))
         }
+        FieldType::ChecklistSelect => {
+            let type_option = ChecklistSelectTypeOption::from(field_rev);
+            Ok(Box::new(type_option))
+        }
         ty => {
             tracing::error!("Unsupported field type: {:?} for this handler", ty);
             Err(ErrorCode::FieldInvalidOperation.into())

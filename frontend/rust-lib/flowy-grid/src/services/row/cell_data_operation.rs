@@ -114,8 +114,14 @@ impl TypeOptionCellData {
         self.field_type == FieldType::MultiSelect
     }
 
+    pub fn is_checklist_select(&self) -> bool {
+        self.field_type == FieldType::ChecklistSelect
+    }
+
     pub fn is_select_option(&self) -> bool {
-        self.field_type == FieldType::MultiSelect || self.field_type == FieldType::SingleSelect
+        self.field_type == FieldType::SingleSelect ||
+        self.field_type == FieldType::MultiSelect || 
+        self.field_type == FieldType::ChecklistSelect
     }
 }
 

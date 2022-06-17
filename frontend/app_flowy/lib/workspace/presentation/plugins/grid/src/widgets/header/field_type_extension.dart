@@ -11,6 +11,8 @@ extension FieldTypeListExtension on FieldType {
         return "grid/field/date";
       case FieldType.MultiSelect:
         return "grid/field/multi_select";
+      case FieldType.ChecklistSelect:
+        return "grid/field/checklist_select";
       case FieldType.Number:
         return "grid/field/number";
       case FieldType.RichText:
@@ -31,6 +33,8 @@ extension FieldTypeListExtension on FieldType {
         return LocaleKeys.grid_field_dateFieldName.tr();
       case FieldType.MultiSelect:
         return LocaleKeys.grid_field_multiSelectFieldName.tr();
+      case FieldType.ChecklistSelect:
+        return LocaleKeys.grid_field_checklistSelectFieldName.tr();
       case FieldType.Number:
         return LocaleKeys.grid_field_numberFieldName.tr();
       case FieldType.RichText:

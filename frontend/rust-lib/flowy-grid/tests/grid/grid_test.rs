@@ -2,7 +2,7 @@ use crate::grid::script::EditorScript::*;
 use crate::grid::script::*;
 use chrono::NaiveDateTime;
 use flowy_grid::services::field::{
-    DateCellContentChangeset, DateCellData, MultiSelectTypeOption, SelectOption, SelectOptionCellContentChangeset,
+    DateCellContentChangeset, DateCellData, MultiSelectTypeOption, ChecklistSelectTypeOption, SelectOption, SelectOptionCellContentChangeset,
     SingleSelectTypeOption, SELECTION_IDS_SEPARATOR,
 };
 use flowy_grid::services::row::{decode_cell_data_from_type_option_cell_data, CreateRowMetaBuilder};
@@ -259,6 +259,16 @@ async fn grid_row_add_cells_test() {
                     .join(SELECTION_IDS_SEPARATOR);
                 builder.add_select_option_cell(&field.id, ops_ids).unwrap();
             }
+            FieldType::ChecklistSelect => {
+                let type_option = ChecklistSelectTypeOption::from(field);
+                let ops_ids = type_option
+                    .options
+                    .iter()
+                    .map(|option| option.id.clone())
+                    .collect::<Vec<_>>()
+                    .join(SELECTION_IDS_SEPARATOR);
+                builder.add_select_option_cell(&field.id, ops_ids).unwrap();
+            }
             FieldType::Checkbox => {
                 builder.add_cell(&field.id, "false".to_string()).unwrap();
             }
@@ -330,6 +340,10 @@ async fn grid_cell_update() {
                         let type_option = MultiSelectTypeOption::from(field_rev);
                         SelectOptionCellContentChangeset::from_insert(&type_option.options.first().unwrap().id).to_str()
                     }
+                    FieldType::ChecklistSelect => {
+                        let type_option = ChecklistSelectTypeOption::from(field_rev);
+                        SelectOptionCellContentChangeset::from_insert(&type_option.options.first().unwrap().id).to_str()
+                    }
                     FieldType::Checkbox => "1".to_string(),
                     FieldType::URL => "1".to_string(),
                 };
@@ -352,6 +366,7 @@ async fn grid_cell_update() {
                     FieldType::DateTime => ("abc".to_string(), true),
                     FieldType::SingleSelect => (SelectOptionCellContentChangeset::from_insert("abc").to_str(), false),
                     FieldType::MultiSelect => (SelectOptionCellContentChangeset::from_insert("abc").to_str(), false),
+                    FieldType::ChecklistSelect => (SelectOptionCellContentChangeset::from_insert("abc").to_str(), false),
                     FieldType::Checkbox => ("2".to_string(), false),
                     FieldType::URL => ("2".to_string(), false),
                 };

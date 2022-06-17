@@ -63,6 +63,7 @@ class GridCellContextBuilder {
           cellDataLoader: cellDataLoader,
           cellDataPersistence: CellDataPersistence(gridCell: _gridCell),
         );
+      case FieldType.ChecklistSelect:
       case FieldType.MultiSelect:
       case FieldType.SingleSelect:
         final cellDataLoader = GridCellDataLoader(

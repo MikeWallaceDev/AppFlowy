@@ -43,6 +43,7 @@ impl CellDataOperation<String> for RichTextTypeOption {
         if decoded_field_type.is_date()
             || decoded_field_type.is_single_select()
             || decoded_field_type.is_multi_select()
+            || decoded_field_type.is_checklist_select()
             || decoded_field_type.is_number()
         {
             decode_cell_data(encoded_data, decoded_field_type, decoded_field_type, field_rev)

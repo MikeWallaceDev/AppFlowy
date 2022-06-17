@@ -1,9 +1,15 @@
 import 'dart:typed_data';
+import 'package:dartz/dartz.dart' show Either;
 
 import 'package:app_flowy/workspace/application/grid/field/type_option/multi_select_type_option.dart';
+import 'package:app_flowy/workspace/application/grid/field/type_option/checklist_select_type_option.dart';
 import 'package:app_flowy/workspace/application/grid/field/type_option/type_option_service.dart';
+import 'package:app_flowy/workspace/application/grid/prelude.dart';
 import 'package:app_flowy/workspace/presentation/plugins/grid/src/widgets/header/type_option/checkbox.dart';
-import 'package:dartz/dartz.dart' show Either;
+import 'package:app_flowy/workspace/presentation/plugins/grid/src/widgets/header/type_option/checklist_select.dart';
+import 'package:app_flowy/workspace/presentation/plugins/grid/src/layout/sizes.dart';
+import 'package:app_flowy/workspace/presentation/plugins/grid/src/widgets/header/field_type_list.dart';
+import 'package:app_flowy/workspace/presentation/plugins/grid/src/widgets/header/type_option/date.dart';
 import 'package:flowy_infra/image.dart';
 import 'package:flowy_infra/theme.dart';
 import 'package:flowy_infra_ui/flowy_infra_ui.dart';
@@ -13,12 +19,9 @@ import 'package:flowy_sdk/protobuf/flowy-error/errors.pb.dart';
 import 'package:flowy_sdk/protobuf/flowy-grid-data-model/field.pb.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:app_flowy/workspace/application/grid/prelude.dart';
-import 'package:app_flowy/workspace/presentation/plugins/grid/src/layout/sizes.dart';
-import 'package:app_flowy/workspace/presentation/plugins/grid/src/widgets/header/field_type_list.dart';
-import 'package:app_flowy/workspace/presentation/plugins/grid/src/widgets/header/type_option/date.dart';
 import 'field_type_extension.dart';
 import 'type_option/multi_select.dart';
+import 'type_option/checklist_select.dart';
 import 'type_option/number.dart';
 import 'type_option/rich_text.dart';
 import 'type_option/single_select.dart';
@@ -159,6 +162,11 @@ TypeOptionBuilder _makeTypeOptionBuild({
         typeOptionContext as MultiSelectTypeOptionContext,
         overlayDelegate,
       );
+    case FieldType.ChecklistSelect:
+      return ChecklistSelectTypeOptionBuilder(
+        typeOptionContext as ChecklistSelectTypeOptionContext,
+        overlayDelegate,
+      );
     case FieldType.Number:
       return NumberTypeOptionBuilder(
         typeOptionContext as NumberTypeOptionContext,
@@ -193,6 +201,11 @@ TypeOptionContext _makeTypeOptionContext(GridFieldContext fieldContext) {
       return MultiSelectTypeOptionContext(
         fieldContext: fieldContext,
         dataBuilder: MultiSelectTypeOptionDataBuilder(),
+      );
+    case FieldType.ChecklistSelect:
+      return ChecklistSelectTypeOptionContext(
+        fieldContext: fieldContext,
+        dataBuilder: ChecklistSelectTypeOptionDataBuilder(),
       );
     case FieldType.Number:
       return NumberTypeOptionContext(
