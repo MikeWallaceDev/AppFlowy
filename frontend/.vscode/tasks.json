@@ -14,7 +14,8 @@
 			"type": "shell",
 			"dependsOrder": "sequence",
 			"dependsOn": [
-				"AF: Clean",
+				"AF: Rust Clean",
+				"AF: Flutter Clean",
 				"AF: build_flowy_sdk",
 				"AF: Flutter Pub Get",
 				"AF: Flutter Package Get",
@@ -48,7 +49,7 @@
 			"linux": {
 				"options": {
 					"env": {
-						"FLOWY_DEV_ENV": "Linux-x86"
+						"FLOWY_DEV_ENV": "Linux"
 					}
 				}
 			},
@@ -69,6 +70,7 @@
 			"type": "shell",
 			"dependsOrder": "sequence",
 			"dependsOn": [
+				"AF: Flutter Clean",
 				"AF: Flutter Pub Get",
 				"AF: Flutter Package Get",
 				"AF: Generate Language Files",
@@ -81,6 +83,14 @@
 			"presentation": {
 				"reveal": "always",
 				"panel": "new"
+			}
+		},
+		{
+			"label": "AF: Flutter Clean",
+			"type": "shell",
+			"command": "flutter clean",
+			"options": {
+				"cwd": "${workspaceFolder}/app_flowy"
 			}
 		},
 		{
@@ -129,21 +139,9 @@
 			}
 		},
 		{
-			"label": "AF: Clean",
+			"label": "AF: Rust Clean",
 			"type": "shell",
-			"command": "sh ./scripts/clean.sh",
-			"windows": {
-				"options": {
-					"shell": {
-						"executable": "cmd.exe",
-						"args": [
-							"/d",
-							"/c",
-							".\\scripts\\clean.cmd"
-						]
-					}
-				}
-			},
+			"command": "cargo make flowy_clean",
 			"group": "build",
 			"options": {
 				"cwd": "${workspaceFolder}"

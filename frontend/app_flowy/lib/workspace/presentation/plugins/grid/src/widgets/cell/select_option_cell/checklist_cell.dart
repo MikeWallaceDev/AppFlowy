@@ -2,15 +2,14 @@ import 'package:app_flowy/workspace/application/grid/prelude.dart';
 import 'package:app_flowy/workspace/presentation/plugins/grid/src/widgets/cell/cell_builder.dart';
 import 'package:app_flowy/startup/startup.dart';
 import 'package:app_flowy/workspace/presentation/plugins/grid/src/widgets/cell/select_option_cell/select_option_editor.dart';
-import 'package:flowy_sdk/protobuf/flowy-grid/selection_type_option.pb.dart';
 import 'package:flowy_infra/theme.dart';
 import 'package:flowy_infra_ui/style_widget/text.dart';
+import 'package:flowy_sdk/protobuf/flowy-grid/select_option.pb.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cell_builder.dart';
 import 'extension.dart';
 import 'select_option_cell.dart';
-
 
 class ChecklistSelectCell extends GridCellWidget {
   final GridCellContextBuilder cellContextBuilder;
@@ -64,7 +63,6 @@ class _ChecklistSelectCellState extends State<ChecklistSelectCell> {
     super.dispose();
   }
 }
-
 
 class _SelectOptionCell extends StatelessWidget {
   final List<SelectOption> selectOptions;

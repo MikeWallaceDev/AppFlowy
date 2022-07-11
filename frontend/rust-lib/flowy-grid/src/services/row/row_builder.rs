@@ -1,23 +1,24 @@
-use crate::services::field::SelectOptionCellContentChangeset;
-use crate::services::row::apply_cell_data_changeset;
+use crate::services::cell::apply_cell_data_changeset;
+use crate::services::field::select_option::SelectOptionCellChangeset;
 use flowy_error::{FlowyError, FlowyResult};
 use flowy_grid_data_model::revision::{gen_row_id, CellRevision, FieldRevision, RowRevision, DEFAULT_ROW_HEIGHT};
 use indexmap::IndexMap;
 use std::collections::HashMap;
+use std::sync::Arc;
 
-pub struct CreateRowMetaBuilder<'a> {
-    field_rev_map: HashMap<&'a String, &'a FieldRevision>,
-    payload: CreateRowMetaPayload,
+pub struct CreateRowRevisionBuilder<'a> {
+    field_rev_map: HashMap<&'a String, &'a Arc<FieldRevision>>,
+    payload: CreateRowRevisionPayload,
 }
 
-impl<'a> CreateRowMetaBuilder<'a> {
-    pub fn new(fields: &'a [FieldRevision]) -> Self {
+impl<'a> CreateRowRevisionBuilder<'a> {
+    pub fn new(fields: &'a [Arc<FieldRevision>]) -> Self {
         let field_rev_map = fields
             .iter()
             .map(|field| (&field.id, field))
-            .collect::<HashMap<&String, &FieldRevision>>();
+            .collect::<HashMap<&String, &Arc<FieldRevision>>>();
 
-        let payload = CreateRowMetaPayload {
+        let payload = CreateRowRevisionPayload {
             row_id: gen_row_id(),
             cell_by_field_id: Default::default(),
             height: DEFAULT_ROW_HEIGHT,
@@ -34,7 +35,7 @@ impl<'a> CreateRowMetaBuilder<'a> {
                 Err(FlowyError::internal().context(msg))
             }
             Some(field_rev) => {
-                let data = apply_cell_data_changeset(&data, None, field_rev)?;
+                let data = apply_cell_data_changeset(data, None, field_rev)?;
                 let cell = CellRevision::new(data);
                 self.payload.cell_by_field_id.insert(field_id.to_owned(), cell);
                 Ok(())
@@ -49,8 +50,8 @@ impl<'a> CreateRowMetaBuilder<'a> {
                 Err(FlowyError::internal().context(msg))
             }
             Some(field_rev) => {
-                let cell_data = SelectOptionCellContentChangeset::from_insert(&data).to_str();
-                let data = apply_cell_data_changeset(&cell_data, None, field_rev)?;
+                let cell_data = SelectOptionCellChangeset::from_insert(&data).to_str();
+                let data = apply_cell_data_changeset(cell_data, None, field_rev)?;
                 let cell = CellRevision::new(data);
                 self.payload.cell_by_field_id.insert(field_id.to_owned(), cell);
                 Ok(())
@@ -70,12 +71,12 @@ impl<'a> CreateRowMetaBuilder<'a> {
         self
     }
 
-    pub fn build(self) -> CreateRowMetaPayload {
+    pub fn build(self) -> CreateRowRevisionPayload {
         self.payload
     }
 }
 
-pub fn make_row_rev_from_context(block_id: &str, payload: CreateRowMetaPayload) -> RowRevision {
+pub fn make_row_rev_from_context(block_id: &str, payload: CreateRowRevisionPayload) -> RowRevision {
     RowRevision {
         id: payload.row_id,
         block_id: block_id.to_owned(),
@@ -85,7 +86,7 @@ pub fn make_row_rev_from_context(block_id: &str, payload: CreateRowMetaPayload) 
     }
 }
 
-pub struct CreateRowMetaPayload {
+pub struct CreateRowRevisionPayload {
     pub row_id: String,
     pub cell_by_field_id: IndexMap<String, CellRevision>,
     pub height: i32,

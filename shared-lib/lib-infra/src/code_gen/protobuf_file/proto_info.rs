@@ -69,26 +69,29 @@ impl ProtobufCrate {
         ProtobufCrate {
             crate_path: config.crate_path,
             crate_folder: config.crate_folder,
-            flowy_config: config.flowy_config.clone(),
+            flowy_config: config.flowy_config,
         }
     }
 
-    pub fn proto_rust_file_paths(&self) -> Vec<PathBuf> {
+    // Return the file paths for each rust file that used to generate the proto file.
+    pub fn proto_input_paths(&self) -> Vec<PathBuf> {
         self.flowy_config
-            .proto_rust_file_input_dir
+            .proto_input
             .iter()
             .map(|name| path_buf_with_component(&self.crate_path, vec![name]))
             .collect::<Vec<PathBuf>>()
     }
 
+    // The protobuf_crate_path is used to store the generated protobuf Rust structures.
     pub fn protobuf_crate_path(&self) -> PathBuf {
-        let crate_path = PathBuf::from(&self.flowy_config.protobuf_crate_output_dir);
+        let crate_path = PathBuf::from(&self.flowy_config.protobuf_crate_path);
         create_dir_if_not_exist(&crate_path);
         crate_path
     }
 
-    pub fn proto_file_output_dir(&self) -> PathBuf {
-        let output_dir = PathBuf::from(&self.flowy_config.proto_file_output_dir);
+    // The proto_output_path is used to store the proto files
+    pub fn proto_output_path(&self) -> PathBuf {
+        let output_dir = PathBuf::from(&self.flowy_config.proto_output);
         create_dir_if_not_exist(&output_dir);
         output_dir
     }
@@ -103,8 +106,24 @@ pub struct ProtoFile {
     pub file_path: String,
     pub file_name: String,
     pub structs: Vec<String>,
+    // store the type of current file using
+    pub ref_types: Vec<String>,
+
     pub enums: Vec<String>,
-    pub generated_content: String,
+    // proto syntax. "proto3" or "proto2"
+    pub syntax: String,
+
+    // proto message content
+    pub content: String,
+}
+
+impl ProtoFile {
+    pub fn symbols(&self) -> Vec<String> {
+        let mut symbols = self.structs.clone();
+        let mut enum_symbols = self.enums.clone();
+        symbols.append(&mut enum_symbols);
+        symbols
+    }
 }
 
 pub fn parse_crate_info_from_path(roots: Vec<String>) -> Vec<ProtobufCrate> {

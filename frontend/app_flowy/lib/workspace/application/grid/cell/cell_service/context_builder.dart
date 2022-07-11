@@ -6,10 +6,10 @@ typedef GridDateCellContext = _GridCellContext<DateCellData, CalendarData>;
 typedef GridURLCellContext = _GridCellContext<URLCellData, String>;
 
 class GridCellContextBuilder {
-  final GridCellCache _cellCache;
+  final GridCellCacheService _cellCache;
   final GridCell _gridCell;
   GridCellContextBuilder({
-    required GridCellCache cellCache,
+    required GridCellCacheService cellCache,
     required GridCell gridCell,
   })  : _cellCache = cellCache,
         _gridCell = gridCell;
@@ -100,8 +100,8 @@ class GridCellContextBuilder {
 // ignore: must_be_immutable
 class _GridCellContext<T, D> extends Equatable {
   final GridCell gridCell;
-  final GridCellCache cellCache;
-  final GridCellCacheKey _cacheKey;
+  final GridCellCacheService cellCache;
+  final _GridCellCacheKey _cacheKey;
   final IGridCellDataLoader<T> cellDataLoader;
   final _GridCellDataPersistence<D> cellDataPersistence;
   final FieldService _fieldService;
@@ -119,7 +119,7 @@ class _GridCellContext<T, D> extends Equatable {
     required this.cellDataLoader,
     required this.cellDataPersistence,
   })  : _fieldService = FieldService(gridId: gridCell.gridId, fieldId: gridCell.field.id),
-        _cacheKey = GridCellCacheKey(objectId: gridCell.rowId, fieldId: gridCell.field.id);
+        _cacheKey = _GridCellCacheKey(rowId: gridCell.rowId, fieldId: gridCell.field.id);
 
   _GridCellContext<T, D> clone() {
     return _GridCellContext(
@@ -214,7 +214,7 @@ class _GridCellContext<T, D> extends Equatable {
     _loadDataOperation = Timer(const Duration(milliseconds: 10), () {
       cellDataLoader.loadData().then((data) {
         _cellDataNotifier?.value = data;
-        cellCache.insert(GridCellCacheData(key: _cacheKey, object: data));
+        cellCache.insert(_GridCellCacheObject(key: _cacheKey, object: data));
       });
     });
   }

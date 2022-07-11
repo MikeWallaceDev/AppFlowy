@@ -1,5 +1,5 @@
 import 'package:app_flowy/workspace/application/grid/cell/cell_service/cell_service.dart';
-import 'package:flowy_sdk/protobuf/flowy-grid-data-model/field.pb.dart';
+import 'package:flowy_sdk/protobuf/flowy-grid/field_entities.pb.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +13,7 @@ import 'select_option_cell/checklist_cell.dart';
 import 'text_cell.dart';
 import 'url_cell/url_cell.dart';
 
-GridCellWidget buildGridCellWidget(GridCell gridCell, GridCellCache cellCache, {GridCellStyle? style}) {
+GridCellWidget buildGridCellWidget(GridCell gridCell, GridCellCacheService cellCache, {GridCellStyle? style}) {
   final key = ValueKey(gridCell.cellId());
 
   final cellContextBuilder = GridCellContextBuilder(gridCell: gridCell, cellCache: cellCache);

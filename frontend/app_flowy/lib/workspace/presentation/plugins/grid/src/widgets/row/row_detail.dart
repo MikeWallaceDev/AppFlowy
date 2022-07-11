@@ -14,22 +14,19 @@ import 'package:flowy_infra_ui/flowy_infra_ui.dart';
 import 'package:flowy_infra_ui/style_widget/icon_button.dart';
 import 'package:flowy_infra_ui/style_widget/scrolling/styled_scroll_bar.dart';
 import 'package:flowy_infra_ui/widget/spacing.dart';
-import 'package:flowy_sdk/protobuf/flowy-grid-data-model/field.pb.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:app_flowy/generated/locale_keys.g.dart';
+import 'package:flowy_sdk/protobuf/flowy-grid/field_entities.pb.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:window_size/window_size.dart';
 
 class RowDetailPage extends StatefulWidget with FlowyOverlayDelegate {
   final GridRow rowData;
-  final GridRowCache rowCache;
-  final GridCellCache cellCache;
+  final GridRowCacheService rowCache;
 
   const RowDetailPage({
     required this.rowData,
     required this.rowCache,
-    required this.cellCache,
     Key? key,
   }) : super(key: key);
 
@@ -37,8 +34,8 @@ class RowDetailPage extends StatefulWidget with FlowyOverlayDelegate {
   State<RowDetailPage> createState() => _RowDetailPageState();
 
   void show(BuildContext context) async {
-    final window = await getWindowInfo();
-    final size = Size(window.frame.size.width * 0.7, window.frame.size.height * 0.7);
+    final windowSize = MediaQuery.of(context).size;
+    final size = windowSize * 0.7;
     FlowyOverlay.of(context).insertWithRect(
       widget: OverlayContainer(
         child: this,
@@ -46,7 +43,7 @@ class RowDetailPage extends StatefulWidget with FlowyOverlayDelegate {
       ),
       identifier: RowDetailPage.identifier(),
       anchorPosition: Offset(-size.width / 2.0, -size.height / 2.0),
-      anchorSize: window.frame.size,
+      anchorSize: windowSize,
       anchorDirection: AnchorDirection.center,
       style: FlowyOverlayStyle(blur: false),
       delegate: this,
@@ -77,7 +74,7 @@ class _RowDetailPageState extends State<RowDetailPage> {
                 children: const [Spacer(), _CloseButton()],
               ),
             ),
-            Expanded(child: _PropertyList(cellCache: widget.cellCache)),
+            Expanded(child: _PropertyList(cellCache: widget.rowCache.cellCache)),
           ],
         ),
       ),
@@ -101,7 +98,7 @@ class _CloseButton extends StatelessWidget {
 }
 
 class _PropertyList extends StatelessWidget {
-  final GridCellCache cellCache;
+  final GridCellCacheService cellCache;
   final ScrollController _scrollController;
   _PropertyList({
     required this.cellCache,
@@ -139,7 +136,7 @@ class _PropertyList extends StatelessWidget {
 
 class _RowDetailCell extends StatelessWidget {
   final GridCell gridCell;
-  final GridCellCache cellCache;
+  final GridCellCacheService cellCache;
   const _RowDetailCell({
     required this.gridCell,
     required this.cellCache,

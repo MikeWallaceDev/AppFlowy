@@ -1,14 +1,14 @@
 import 'package:app_flowy/workspace/application/grid/field/field_service.dart';
 import 'package:flowy_sdk/log.dart';
-import 'package:flowy_sdk/protobuf/flowy-grid/selection_type_option.pb.dart';
 import 'package:flowy_sdk/protobuf/flowy-grid/checklist_selection_type_option.pb.dart';
+import 'package:flowy_sdk/protobuf/flowy-grid/select_option.pb.dart';
 import 'package:protobuf/protobuf.dart';
 import 'select_option_type_option_bloc.dart';
 import 'type_option_service.dart';
 import 'dart:async';
 
-class ChecklistSelectTypeOptionContext extends TypeOptionContext<ChecklistSelectTypeOption> 
-with SelectOptionTypeOptionAction {
+class ChecklistSelectTypeOptionContext extends TypeOptionContext<ChecklistSelectTypeOption>
+    with SelectOptionTypeOptionAction {
   final TypeOptionService service;
 
   ChecklistSelectTypeOptionContext({

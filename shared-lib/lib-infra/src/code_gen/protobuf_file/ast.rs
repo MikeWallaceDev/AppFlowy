@@ -2,7 +2,7 @@
 #![allow(dead_code)]
 #![allow(unused_imports)]
 #![allow(unused_results)]
-use crate::code_gen::protobuf_file::template::{EnumTemplate, StructTemplate};
+use crate::code_gen::protobuf_file::template::{EnumTemplate, StructTemplate, RUST_TYPE_MAP};
 use crate::code_gen::protobuf_file::{parse_crate_info_from_path, ProtoFile, ProtobufCrateContext};
 use crate::code_gen::util::*;
 use fancy_regex::Regex;
@@ -15,25 +15,23 @@ use walkdir::WalkDir;
 
 pub fn parse_protobuf_context_from(crate_paths: Vec<String>) -> Vec<ProtobufCrateContext> {
     let crate_infos = parse_crate_info_from_path(crate_paths);
-    let contexts = crate_infos
+    crate_infos
         .into_iter()
         .map(|crate_info| {
-            let proto_output_dir = crate_info.proto_file_output_dir();
+            let proto_output_path = crate_info.proto_output_path();
             let files = crate_info
-                .proto_rust_file_paths()
+                .proto_input_paths()
                 .iter()
-                .map(|proto_crate_path| parse_files_protobuf(proto_crate_path, &proto_output_dir))
+                .map(|proto_crate_path| parse_files_protobuf(proto_crate_path, &proto_output_path))
                 .flatten()
                 .collect::<Vec<ProtoFile>>();
 
             ProtobufCrateContext::from_crate_info(crate_info, files)
         })
-        .collect::<Vec<ProtobufCrateContext>>();
-
-    contexts
+        .collect::<Vec<ProtobufCrateContext>>()
 }
 
-fn parse_files_protobuf(proto_crate_path: &Path, proto_output_dir: &Path) -> Vec<ProtoFile> {
+fn parse_files_protobuf(proto_crate_path: &Path, proto_output_path: &Path) -> Vec<ProtoFile> {
     let mut gen_proto_vec: Vec<ProtoFile> = vec![];
     // file_stem https://doc.rust-lang.org/std/path/struct.Path.html#method.file_stem
     for (path, file_name) in WalkDir::new(proto_crate_path)
@@ -56,20 +54,29 @@ fn parse_files_protobuf(proto_crate_path: &Path, proto_output_dir: &Path) -> Vec
             .unwrap_or_else(|_| panic!("Unable to parse file at {}", path));
         let structs = get_ast_structs(&ast);
         let proto_file = format!("{}.proto", &file_name);
-        let proto_file_path = path_string_with_component(proto_output_dir, vec![&proto_file]);
-        let mut proto_file_content = find_proto_syntax(proto_file_path.as_ref());
+        let proto_file_path = path_string_with_component(proto_output_path, vec![&proto_file]);
+        let proto_syntax = find_proto_syntax(proto_file_path.as_ref());
 
+        let mut proto_content = String::new();
+
+        // The types that are not defined in the current file.
+        let mut ref_types: Vec<String> = vec![];
         structs.iter().for_each(|s| {
             let mut struct_template = StructTemplate::new();
             struct_template.set_message_struct_name(&s.name);
 
-            s.fields.iter().filter(|f| f.attrs.pb_index().is_some()).for_each(|f| {
-                struct_template.set_field(f);
-            });
+            s.fields
+                .iter()
+                .filter(|field| field.attrs.pb_index().is_some())
+                .for_each(|field| {
+                    ref_types.push(field.ty_as_str());
+                    struct_template.set_field(field);
+                });
 
             let s = struct_template.render().unwrap();
-            proto_file_content.push_str(s.as_ref());
-            proto_file_content.push('\n');
+
+            proto_content.push_str(s.as_ref());
+            proto_content.push('\n');
         });
 
         let enums = get_ast_enums(&ast);
@@ -77,17 +84,26 @@ fn parse_files_protobuf(proto_crate_path: &Path, proto_output_dir: &Path) -> Vec
             let mut enum_template = EnumTemplate::new();
             enum_template.set_message_enum(e);
             let s = enum_template.render().unwrap();
-            proto_file_content.push_str(s.as_ref());
-            proto_file_content.push('\n');
+            proto_content.push_str(s.as_ref());
+            ref_types.push(e.name.clone());
+
+            proto_content.push('\n');
         });
 
         if !enums.is_empty() || !structs.is_empty() {
+            let structs: Vec<String> = structs.iter().map(|s| s.name.clone()).collect();
+            let enums: Vec<String> = enums.iter().map(|e| e.name.clone()).collect();
+            ref_types.retain(|s| !structs.contains(s));
+            ref_types.retain(|s| !enums.contains(s));
+
             let info = ProtoFile {
                 file_path: path.clone(),
                 file_name: file_name.clone(),
-                structs: structs.iter().map(|s| s.name.clone()).collect(),
-                enums: enums.iter().map(|e| e.name.clone()).collect(),
-                generated_content: proto_file_content.clone(),
+                ref_types,
+                structs,
+                enums,
+                syntax: proto_syntax,
+                content: proto_content,
             };
             gen_proto_vec.push(info);
         }
@@ -148,12 +164,12 @@ pub struct Struct<'a> {
 
 lazy_static! {
     static ref SYNTAX_REGEX: Regex = Regex::new("syntax.*;").unwrap();
-    static ref IMPORT_REGEX: Regex = Regex::new("(import\\s).*;").unwrap();
+    // static ref IMPORT_REGEX: Regex = Regex::new("(import\\s).*;").unwrap();
 }
 
 fn find_proto_syntax(path: &str) -> String {
     if !Path::new(path).exists() {
-        return String::from("syntax = \"proto3\";\\n");
+        return String::from("syntax = \"proto3\";\n");
     }
 
     let mut result = String::new();
@@ -165,13 +181,12 @@ fn find_proto_syntax(path: &str) -> String {
         ////Result<Option<Match<'t>>>
         if let Ok(Some(m)) = SYNTAX_REGEX.find(line) {
             result.push_str(m.as_str());
-            result.push('\n');
         }
 
-        if let Ok(Some(m)) = IMPORT_REGEX.find(line) {
-            result.push_str(m.as_str());
-            result.push('\n');
-        }
+        // if let Ok(Some(m)) = IMPORT_REGEX.find(line) {
+        //     result.push_str(m.as_str());
+        //     result.push('\n');
+        // }
     });
 
     result.push('\n');
