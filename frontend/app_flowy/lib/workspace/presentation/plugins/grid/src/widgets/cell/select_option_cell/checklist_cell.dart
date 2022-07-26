@@ -11,12 +11,12 @@ import '../cell_builder.dart';
 import 'extension.dart';
 import 'select_option_cell.dart';
 
-class ChecklistSelectCell extends GridCellWidget {
-  final GridCellContextBuilder cellContextBuilder;
+class GridChecklistSelectCell extends GridCellWidget {
+  final GridCellControllerBuilder cellContorllerBuilder;
   late final SelectOptionCellStyle? cellStyle;
 
-  ChecklistSelectCell({
-    required this.cellContextBuilder,
+  GridChecklistSelectCell({
+    required this.cellContorllerBuilder,
     GridCellStyle? style,
     Key? key,
   }) : super(key: key) {
@@ -28,15 +28,15 @@ class ChecklistSelectCell extends GridCellWidget {
   }
 
   @override
-  State<ChecklistSelectCell> createState() => _ChecklistSelectCellState();
+  State<GridChecklistSelectCell> createState() => _ChecklistSelectCellState();
 }
 
-class _ChecklistSelectCellState extends State<ChecklistSelectCell> {
+class _ChecklistSelectCellState extends State<GridChecklistSelectCell> {
   late SelectOptionCellBloc _cellBloc;
 
   @override
   void initState() {
-    final cellContext = widget.cellContextBuilder.build() as GridSelectOptionCellContext;
+    final cellContext = widget.cellContorllerBuilder.build();
     _cellBloc = getIt<SelectOptionCellBloc>(param1: cellContext)..add(const SelectOptionCellEvent.initial());
     super.initState();
   }
@@ -51,7 +51,7 @@ class _ChecklistSelectCellState extends State<ChecklistSelectCell> {
               selectOptions: state.selectedOptions,
               cellStyle: widget.cellStyle,
               onFocus: (value) => widget.onCellEditing.value = value,
-              cellContextBuilder: widget.cellContextBuilder);
+              cellContextBuilder: widget.cellContorllerBuilder);
         },
       ),
     );
@@ -65,10 +65,10 @@ class _ChecklistSelectCellState extends State<ChecklistSelectCell> {
 }
 
 class _SelectOptionCell extends StatelessWidget {
-  final List<SelectOption> selectOptions;
+  final List<SelectOptionPB> selectOptions;
   final void Function(bool) onFocus;
   final SelectOptionCellStyle? cellStyle;
-  final GridCellContextBuilder cellContextBuilder;
+  final GridCellControllerBuilder cellContextBuilder;
   const _SelectOptionCell({
     required this.selectOptions,
     required this.onFocus,
@@ -109,7 +109,7 @@ class _SelectOptionCell extends StatelessWidget {
         InkWell(
           onTap: () {
             onFocus(true);
-            final cellContext = cellContextBuilder.build() as GridSelectOptionCellContext;
+            final cellContext = cellContextBuilder.build() as GridSelectOptionCellController;
             SelectOptionCellEditor.show(context, cellContext, () => onFocus(false));
           },
         ),

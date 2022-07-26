@@ -7,22 +7,22 @@ import 'select_option_type_option_bloc.dart';
 import 'type_option_service.dart';
 import 'dart:async';
 
-class ChecklistSelectTypeOptionContext extends TypeOptionContext<ChecklistSelectTypeOption>
+class ChecklistSelectTypeOptionContext extends TypeOptionWidgetContext<ChecklistSelectTypeOption>
     with SelectOptionTypeOptionAction {
   final TypeOptionService service;
 
   ChecklistSelectTypeOptionContext({
     required ChecklistSelectTypeOptionDataBuilder dataBuilder,
-    required GridFieldContext fieldContext,
+    required TypeOptionDataController dataController,
   })  : service = TypeOptionService(
-          gridId: fieldContext.gridId,
-          fieldId: fieldContext.field.id,
+          gridId: dataController.gridId,
+          fieldId: dataController.field.id,
         ),
-        super(dataBuilder: dataBuilder, fieldContext: fieldContext);
+        super(dataParser: dataBuilder, dataController: dataController);
 
   @override
-  List<SelectOption> Function(SelectOption) get deleteOption {
-    return (SelectOption option) {
+  List<SelectOptionPB> Function(SelectOptionPB) get deleteOption {
+    return (SelectOptionPB option) {
       typeOption.freeze();
       typeOption = typeOption.rebuild((typeOption) {
         final index = typeOption.options.indexWhere((element) => element.id == option.id);
@@ -35,7 +35,7 @@ class ChecklistSelectTypeOptionContext extends TypeOptionContext<ChecklistSelect
   }
 
   @override
-  Future<List<SelectOption>> Function(String) get insertOption {
+  Future<List<SelectOptionPB>> Function(String) get insertOption {
     return (String optionName) {
       return service.newOption(name: optionName).then((result) {
         return result.fold(
@@ -57,8 +57,8 @@ class ChecklistSelectTypeOptionContext extends TypeOptionContext<ChecklistSelect
   }
 
   @override
-  List<SelectOption> Function(SelectOption) get udpateOption {
-    return (SelectOption option) {
+  List<SelectOptionPB> Function(SelectOptionPB) get udpateOption {
+    return (SelectOptionPB option) {
       typeOption.freeze();
       typeOption = typeOption.rebuild((typeOption) {
         final index = typeOption.options.indexWhere((element) => element.id == option.id);
@@ -71,7 +71,7 @@ class ChecklistSelectTypeOptionContext extends TypeOptionContext<ChecklistSelect
   }
 }
 
-class ChecklistSelectTypeOptionDataBuilder extends TypeOptionDataBuilder<ChecklistSelectTypeOption> {
+class ChecklistSelectTypeOptionDataBuilder extends TypeOptionDataParser<ChecklistSelectTypeOption> {
   @override
   ChecklistSelectTypeOption fromBuffer(List<int> buffer) {
     return ChecklistSelectTypeOption.fromBuffer(buffer);

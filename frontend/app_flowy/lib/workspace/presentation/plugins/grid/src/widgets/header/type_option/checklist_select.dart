@@ -1,15 +1,15 @@
+import 'package:app_flowy/workspace/presentation/plugins/grid/src/widgets/header/type_option/builder.dart';
 import 'package:flutter/material.dart';
 
 import 'package:app_flowy/workspace/application/grid/field/type_option/checklist_select_type_option.dart';
-import 'package:app_flowy/workspace/presentation/plugins/grid/src/widgets/header/field_editor_pannel.dart';
 import 'package:app_flowy/workspace/presentation/plugins/grid/src/widgets/header/type_option/select_option.dart';
+import '../field_type_option_editor.dart';
 import 'select_option.dart';
 
-
-class ChecklistSelectTypeOptionBuilder extends TypeOptionBuilder {
+class ChecklistSelectTypeOptionWidgetBuilder extends TypeOptionWidgetBuilder {
   final ChecklistSelectTypeOptionWidget _widget;
 
-  ChecklistSelectTypeOptionBuilder(
+  ChecklistSelectTypeOptionWidgetBuilder(
     ChecklistSelectTypeOptionContext typeOptionContext,
     TypeOptionOverlayDelegate overlayDelegate,
   ) : _widget = ChecklistSelectTypeOptionWidget(
@@ -18,7 +18,7 @@ class ChecklistSelectTypeOptionBuilder extends TypeOptionBuilder {
         );
 
   @override
-  Widget? get customWidget => _widget;
+  Widget? build(BuildContext context) => _widget;
 }
 
 class ChecklistSelectTypeOptionWidget extends TypeOptionWidget {
